@@ -5,6 +5,9 @@
     "noImplicitAny": true,
     "outDir": "./build",
     "noEmitOnError": true,
+    "noEmit": true,
+
+    "allowImportingTsExtensions": true
   },
   "include": ["./src/**/*", "./server.ts"]
 }
