@@ -1,6 +1,13 @@
 import express from "express";
-import petRouter from "../routes/routerPet";
+import pets from "./routerPet.ts";
+import { Request, Response } from "express";
+
 const router = (app: express.Router) => {
-  app.use("/pets", petRouter);
+  app
+    .route("/")
+    .get((req: Request, res: any) =>
+      res.status(200).send("Curso de node Alura pets")
+    );
+  app.use(express.json(), pets);
 };
 export default router;

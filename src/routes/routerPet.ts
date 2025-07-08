@@ -1,10 +1,13 @@
 import express from "express";
-import PetController from "../controller/controllerPet";
+
+import ControllerPet from "../controller/controllerPet";
 
 const router = express.Router();
 
-const petController = new PetController();
-
-router.post("/", petController.criarPet);
+router.get("/pets", ControllerPet.listarPet);
+router.get("/pets/:id", ControllerPet.petPorId);
+router.post("/pets", ControllerPet.criarPet);
+router.put("/pets/:id", ControllerPet.atualizaPet);
+router.delete("/pets/:id", ControllerPet.deletePet);
 
 export default router;
