@@ -6,6 +6,8 @@
     "outDir": "./build",
     "noEmitOnError": true,
     "noEmit": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
 
     "allowImportingTsExtensions": true
   },
