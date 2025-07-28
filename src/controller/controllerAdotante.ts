@@ -6,29 +6,35 @@ import AdotanteRepository from "../repositories/adotanteRepository";
 class ControllerAdotante {
   constructor(private repository: AdotanteRepository) {}
   listarAdotante: RequestHandler = async (req, res) => {
+    const { success, listadeAdotante, message } =
+      await this.repository.listarAdotande();
     try {
-      const listaDeAdotantes = await this.repository.listarAdotande();
-      res.status(200).json(listaDeAdotantes);
+      res
+        .status(200)
+        .json({ data: listadeAdotante, message: message, success });
     } catch (error) {
-      res.status(500).json({ message: `Error - ${error}` });
+      res.status(500).json({ message: `${message}`, success: success });
     }
   };
 
   adotantePorId: RequestHandler = async (req, res) => {
     const { id } = req.params;
+    const { success, adotantePorId, message } =
+      await this.repository.adotandePorId(Number(id));
     try {
-      const adotantePorId = await this.repository.adotandePorId(Number(id));
-      if (adotantePorId === null) throw Error;
-      res.status(200).json(adotantePorId);
+      if (adotantePorId === null || !success) throw Error();
+      res
+        .status(200)
+        .json({ data: adotantePorId, message: message, success: success });
     } catch (error) {
       res
         .status(500)
-        .json({ message: "Erro ao encontrar o Adotante" }) as unknown as void;
+        .json({ message: `${message} - ${error}`, success: success });
     }
   };
 
   criarAdotante: RequestHandler = async (req, res) => {
-    const arrayFields = ["name", "password", "address", "phone", "photo"];
+    const arrayFields = ["name", "password", "phone"];
     const newAdotado = <AdotanteEntity>req.body;
     const { name, password, address, phone, photo } = <AdotanteEntity>req.body;
 
@@ -44,49 +50,56 @@ class ControllerAdotante {
 
     if (missingField) return;
 
+    const novoAdotante = new AdotanteEntity(
+      name,
+      password,
+      phone,
+      photo,
+      address
+    );
+    const { success, adotanteBody, message } =
+      await this.repository.criarAdotante(novoAdotante);
     try {
-      const novoAdotante = new AdotanteEntity(
-        name,
-        password,
-        phone,
-        photo,
-        address
-      );
-      this.repository.criarAdotante(novoAdotante);
-      res.status(200).send("Criado com Sucesso");
+      res
+        .status(200)
+        .json({ data: adotanteBody, success: success, message: message });
     } catch (error) {
-      res.status(500).json({ message: `Erro - ${error}` });
+      res
+        .status(500)
+        .json({ message: `${message} - ${error}`, success: success });
     }
   };
 
   atualizarAdotante: RequestHandler = async (req, res) => {
     const { id } = req.params;
+    const { message, success, adotanteAtualizado } =
+      await this.repository.atualizarAdotante(
+        Number(id),
+        req.body as AdotanteEntity
+      );
     try {
-      const { message, success } = await this.repository.atualizarAdotante(
-        Number(id),
-        req.body as AdotanteEntity
-      );
-      if (!success) throw Error()
-      res.status(200).json({ message: message });
+      if (!success) throw Error();
+      res
+        .status(200)
+        .json({ data: adotanteAtualizado, message: message, success: success });
     } catch (error) {
-      const { success, message } = await this.repository.atualizarAdotante(
-        Number(id),
-        req.body as AdotanteEntity
-      );
-      if (!success) return res.status(404).json({ message }) as unknown as void;
+      if (!success) res.status(404).json({ message, success: success });
     }
   };
 
   deletarAdotante: RequestHandler = async (req, res) => {
     const { id } = req.params;
     try {
-      const delet = await this.repository.deletarAdotante(Number(id));
-      res.status(200).json({ message: "Deletado com sucesso!" });
+      const { success, message } = await this.repository.deletarAdotante(
+        Number(id)
+      );
+      if (!success) throw Error();
+      res.status(200).json({ message: message, success: success });
     } catch (error) {
       const { success, message } = await this.repository.deletarAdotante(
         Number(id)
       );
-      if (!success) return res.status(404).json({ message }) as unknown as void;
+      if (!success) res.status(404).json({ message, success: success });
     }
   };
 }

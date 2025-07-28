@@ -14,18 +14,18 @@ export default class AdotanteEntity {
   @Column()
   phone: string;
 
-  @Column()
-  photo: string;
+  @Column({nullable: true})
+  photo?: string;
 
-  @Column()
-  address: string;
+  @Column({nullable: true})
+  address?: string;
 
   constructor(
     name: string,
     password: string,
     phone: string,
-    photo: string,
-    address: string
+    photo?: string,
+    address?: string
   ) {
     this.name = name;
     this.password = password;

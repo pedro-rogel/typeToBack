@@ -1,6 +1,5 @@
-import { AfterLoad, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import EnumEspecie from "../models/enumEspecie";
-import geraIdade from "../functions/geraIdade.ts";
 
 @Entity()
 export default class PetEntity {
@@ -18,7 +17,6 @@ export default class PetEntity {
 
   @Column()
   adotado: boolean;
-
 
   constructor(
     nome: string,
