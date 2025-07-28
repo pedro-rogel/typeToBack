@@ -24,4 +24,4 @@ const geraIdade = (data: string) => {
   return String(Number(currentYear) - Number(yearInput));
 };
 
-export default geraIdade
+export default geraIdade;

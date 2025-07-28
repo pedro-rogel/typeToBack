@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { AfterLoad, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import EnumEspecie from "../models/enumEspecie";
+import geraIdade from "../functions/geraIdade.ts";
 
 @Entity()
 export default class PetEntity {
@@ -10,23 +11,24 @@ export default class PetEntity {
   nome: string;
 
   @Column({ type: "varchar", enum: EnumEspecie })
-  especie: EnumEspecie;
+  especie: EnumEspecie | undefined;
 
   @Column()
-  dataNascimento: string;
+  idade: string;
 
   @Column()
   adotado: boolean;
 
+
   constructor(
     nome: string,
-    especie: EnumEspecie,
-    dataNascimento: string,
+    especie: EnumEspecie | undefined,
+    idade: string,
     adotado: boolean
   ) {
     this.nome = nome;
     this.especie = especie;
-    this.dataNascimento = dataNascimento;
+    this.idade = idade;
     this.adotado = adotado;
   }
 }

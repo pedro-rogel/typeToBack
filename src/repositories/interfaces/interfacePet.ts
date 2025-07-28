@@ -2,7 +2,7 @@ import PetEntity from "../../entities/petEntity";
 
 export default interface InterfacePet {
   listarPet(): Promise<Array<PetEntity>> | Array<PetEntity>;
-  petPorId(id: number): Promise<PetEntity> | Array<PetEntity>;
+  petPorId(id: number): Promise<PetEntity | null> 
   criarPet(pet: PetEntity): Promise<void>;
   atualizaPet(
     id: number,
