@@ -2,6 +2,7 @@ import { Repository } from "typeorm";
 import PetEntity from "../entities/petEntity";
 import InterfacePet from "./interfaces/interfacePet";
 import AdotanteEntity from "../entities/adotanteEntity";
+import EnumPorte from "../models/enumPorte";
 
 export default class PetRepository implements InterfacePet {
   private petRepository: Repository<PetEntity>;
@@ -24,7 +25,7 @@ export default class PetRepository implements InterfacePet {
     listaDePet?: Array<PetEntity>;
   }> {
     const listaDePet = await this.petRepository.find({
-      relations: ['adotante']
+      relations: ["adotante"],
     });
     if (!listaDePet) {
       return {
@@ -44,7 +45,10 @@ export default class PetRepository implements InterfacePet {
     success: boolean;
     message?: string;
   }> {
-    const pet = await this.petRepository.findOne({ where: { id }, relations:['adotante'] });
+    const pet = await this.petRepository.findOne({
+      where: { id },
+      relations: ["adotante"],
+    });
     if (!pet)
       return {
         petPorId: null,
@@ -93,7 +97,7 @@ export default class PetRepository implements InterfacePet {
     await this.petRepository.remove(petToDelete);
     return { success: true, message: "Pet Deletado com sucesso!" };
   }
-  async queryParams(
+  async queryAdotado(
     adotado: boolean
   ): Promise<{ success: boolean; message?: string; petAdotado?: PetEntity[] }> {
     const adotadoParam = await this.petRepository.find({ where: { adotado } });
@@ -121,5 +125,51 @@ export default class PetRepository implements InterfacePet {
     await this.petRepository.save(petId);
 
     return { success: true, message: this.messageTrue };
+  }
+
+  async queryPetByPorte(porte: EnumPorte): Promise<{
+    success: boolean;
+    message?: string;
+    prtByPorte?: Array<PetEntity>;
+  }> {
+    const petByPorte = await this.petRepository.find({
+      where: { porte: porte },
+    });
+    return !petByPorte
+      ? {
+          success: false,
+          message: `${this.messageFalse} - Passe um filtro válido`,
+        }
+      : { success: true, message: this.messageTrue, prtByPorte: petByPorte };
+  }
+
+  async queryPetByAnyField<T extends keyof PetEntity>(
+    field: T,
+    value: PetEntity[T]
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    petByAnyField?: Array<PetEntity>;
+  }> {
+    try {
+      const pets = await this.petRepository.find({
+        where: { [field]: value },
+      });
+
+      return {
+        success: true,
+        message:
+          pets.length > 0
+            ? `Encontrados ${pets.length} pets`
+            : "Nenhum pet encontrado com os critérios especificados",
+        petByAnyField: pets,
+      };
+    } catch (error) {
+      console.error("Erro em queryPetByAnyField:", error);
+      return {
+        success: false,
+        message: "Erro ao buscar pets",
+      };
+    }
   }
 }

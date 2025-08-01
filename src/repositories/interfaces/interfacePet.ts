@@ -1,4 +1,5 @@
 import PetEntity from "../../entities/petEntity";
+import EnumPorte from "../../models/enumPorte";
 
 export default interface InterfacePet {
   listarPet():
@@ -25,11 +26,28 @@ export default interface InterfacePet {
   deletePet(
     id: number,
     pet: PetEntity
-  ): Promise<{ success: boolean; message?: string }> | void;
-  queryParams(
+  ): Promise<{ success: boolean; message?: string }>;
+  queryAdotado(
     adotado: boolean
-  ): Promise<{ success: boolean; message?: string } | void>;
+  ): Promise<{ success: boolean; message?: string }>;
 
-  adotaPet(idPet:number, idAdotante:number):Promise<{success:boolean, message?:string}>
-  
+  adotaPet(
+    idPet: number,
+    idAdotante: number
+  ): Promise<{ success: boolean; message?: string }>;
+
+  queryPetByPorte(porte: EnumPorte): Promise<{
+    success: boolean;
+    message?: string;
+    petByPote?: Array<PetEntity>;
+  }>;
+
+  queryPetByAnyField<T extends keyof PetEntity>(
+    field: T,
+    value: PetEntity[T]
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    petByAnyField?: Array<PetEntity>;
+  }>;
 }

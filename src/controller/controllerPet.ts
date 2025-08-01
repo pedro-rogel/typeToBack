@@ -5,6 +5,8 @@ import PetEntity from "../entities/petEntity.ts";
 import geraIdade from "../functions/geraIdade.ts";
 import convertLowerCase from "../functions/convertLowerCase.ts";
 import { classToPlain, instanceToPlain } from "class-transformer";
+import EnumEspecie from "../models/enumEspecie.ts";
+import EnumPorte from "../models/enumPorte.ts";
 
 interface PetId {
   id: string;
@@ -15,7 +17,9 @@ class ControllerPet {
   listarPet: RequestHandler = async (req, res) => {
     const listaDePet = await this.repository.listarPet();
     try {
-      const petsTransformados = listaDePet.listaDePet?.map(pet => instanceToPlain(pet))
+      const petsTransformados = listaDePet.listaDePet?.map((pet) =>
+        instanceToPlain(pet)
+      );
       res.status(200).json({
         data: petsTransformados,
         message: listaDePet.message,
@@ -48,9 +52,15 @@ class ControllerPet {
   };
 
   criarPet: RequestHandler = async (req, res) => {
-    const arrayFields = ["nome", "dataNascimento", "adotado", "especie"];
+    const arrayFields = [
+      "nome",
+      "dataNascimento",
+      "adotado",
+      "especie",
+      "porte",
+    ];
     const newPet = <PetEntity>req.body;
-    const { nome, dataNascimento, adotado, especie } = req.body;
+    const { nome, dataNascimento, adotado, especie, porte } = req.body;
     const missingField = arrayFields.find((fieldName) => {
       if (!newPet[fieldName as keyof PetEntity]) {
         res
@@ -64,8 +74,15 @@ class ControllerPet {
     if (missingField) return;
 
     const idade = geraIdade(dataNascimento);
-    const especieLowerCase = convertLowerCase(especie);
-    const novoPet = new PetEntity(nome, especieLowerCase, idade, adotado);
+    const especieLowerCase = convertLowerCase(especie, EnumEspecie);
+    const porteLowerCase = convertLowerCase(porte, EnumPorte);
+    const novoPet = new PetEntity(
+      nome,
+      especieLowerCase,
+      idade,
+      adotado,
+      porteLowerCase
+    );
     const response = await this.repository.criarPet(novoPet);
     try {
       if (!response.success) throw Error(response.message);
@@ -108,11 +125,11 @@ class ControllerPet {
     }
   };
 
-  queryParams: RequestHandler = async (req, res) => {
+  queryAdota: RequestHandler = async (req, res) => {
     const adotado = req.query.adotado;
     const isAdotado = adotado === "true";
-    const petFiltrado = await this.repository.queryParams(isAdotado);
-    const { success, message } = await this.repository.queryParams(isAdotado);
+    const petFiltrado = await this.repository.queryAdotado(isAdotado);
+    const { success, message } = await this.repository.queryAdotado(isAdotado);
     try {
       res.status(200).json({
         data: petFiltrado.petAdotado,
@@ -131,15 +148,51 @@ class ControllerPet {
       Number(adotante_id)
     );
     try {
-      return !success
-        ? (res
-            .status(400)
-            .json({ success: success, message: message }) as unknown as void)
-        : (res
-            .status(200)
-            .json({ success: success, message: message }) as unknown as void);
+      !success
+        ? res.status(400).json({ success: success, message: message })
+        : res.status(200).json({ success: success, message: message });
     } catch (error) {
       res.status(500).json({ message: message, success: success });
+    }
+  };
+
+  queryPorte: RequestHandler = async (req, res) => {
+    const { porte } = req.query;
+    const { success, message, prtByPorte } =
+      await this.repository.queryPetByPorte(porte as EnumPorte);
+    try {
+      !success
+        ? res.status(400).json({ success: success, message: message })
+        : res
+            .status(200)
+            .json({ data: prtByPorte, message: message, success: success });
+    } catch (error) {
+      res.status(500).json({ message: message, success: success });
+    }
+  };
+
+  queryPetByAnyField: RequestHandler = async (req, res) => {
+    const { field, value } = req.query;
+    let isAdotado;
+    if (field === "adotado") {
+      isAdotado = true;
+    }
+    const { success, message, petByAnyField } =
+      await this.repository.queryPetByAnyField(
+        field !== "adotado" ? (field as keyof PetEntity) : "adotado",
+        field !== "adotado" ? (value as string) : isAdotado
+      );
+    try {
+      !success
+        ? res.status(400).json({ success: success, message: message })
+        : res
+            .status(200)
+            .json({ data: petByAnyField, message: message, success: success });
+    } catch (error) {
+      res.status(500).json({
+        success: success,
+        message: message,
+      });
     }
   };
 }

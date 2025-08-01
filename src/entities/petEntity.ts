@@ -8,6 +8,7 @@ import {
 } from "typeorm";
 import EnumEspecie from "../models/enumEspecie";
 import AdotanteEntity from "./adotanteEntity";
+import EnumPorte from "../models/enumPorte";
 
 @Entity()
 export default class PetEntity {
@@ -26,6 +27,9 @@ export default class PetEntity {
   @Column()
   adotado: boolean;
 
+  @Column({type: "varchar", enum:EnumPorte, nullable:true})
+  porte?: EnumPorte | undefined
+
   @ManyToOne(() => AdotanteEntity, (adotante) => adotante.pets,{nullable:true} )
   @JoinColumn({ name: "adotante_id" })
   adotante!: AdotanteEntity | null;
@@ -34,11 +38,13 @@ export default class PetEntity {
     nome: string,
     especie: EnumEspecie | undefined,
     idade: string,
-    adotado: boolean
+    adotado: boolean,
+    porte?: EnumPorte | undefined,
   ) {
     this.nome = nome;
     this.especie = especie;
     this.idade = idade;
     this.adotado = adotado;
+    this.porte = porte
   }
 }

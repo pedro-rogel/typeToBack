@@ -12,10 +12,12 @@ const petRepository = new PetRepository(
 const petController = new ControllerPet(petRepository);
 
 router.get("/pets", petController.listarPet);
-router.get("/pets/query", petController.queryParams);
+router.get("/pets/adotado", petController.queryAdota);
+router.get("/pets/query", petController.queryPetByAnyField);
+router.get("/pets/porte", petController.queryPorte);
 router.get("/pets/:id", petController.petPorId);
 router.post("/pets", petController.criarPet);
-router.put("/pets/:pet_id/:adotante_id", petController.adotaPet)
+router.put("/pets/:pet_id/:adotante_id", petController.adotaPet);
 router.put("/pets/:id", petController.atualizaPet);
 router.delete("/pets/:id", petController.deletePet);
 
