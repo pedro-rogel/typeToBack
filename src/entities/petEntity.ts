@@ -1,5 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import EnumEspecie from "../models/enumEspecie";
+import AdotanteEntity from "./adotanteEntity";
 
 @Entity()
 export default class PetEntity {
@@ -17,6 +25,10 @@ export default class PetEntity {
 
   @Column()
   adotado: boolean;
+
+  @ManyToOne(() => AdotanteEntity, (adotante) => adotante.pets,{nullable:true} )
+  @JoinColumn({ name: "adotante_id" })
+  adotante!: AdotanteEntity | null;
 
   constructor(
     nome: string,

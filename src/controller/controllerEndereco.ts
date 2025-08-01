@@ -18,6 +18,7 @@ class ControllerEndereco {
   };
 
   criarEndereco: RequestHandler = async (req, res) => {
+    const enderecoData = <EnderecoEntity & { idAdotante: number }>req.body;
     const addressFieldName = [
       "street",
       "city",
@@ -26,13 +27,8 @@ class ControllerEndereco {
       "number",
       "zip",
     ];
-    const newEndereco = <EnderecoEntity>req.body;
-    const { street, city, state, neighborhood, number, zip } = <EnderecoEntity>(
-      req.body
-    );
-
     const missingField = addressFieldName.find((addressFieldName) => {
-      if (!newEndereco[addressFieldName as keyof EnderecoEntity]) {
+      if (!enderecoData[addressFieldName as keyof EnderecoEntity]) {
         res.status(400).json({
           message: `Passe um valor para  ioo campo ${addressFieldName}`,
         });
@@ -42,26 +38,15 @@ class ControllerEndereco {
     });
 
     if (missingField) return;
-
-    const criarEndereco = new EnderecoEntity(
-      street,
-      city,
-      state,
-      neighborhood,
-      number,
-      zip
-    );
-    const response = await this.repository.criarEndereco(criarEndereco);
+    const { success, enderecoCriado, message } =
+      await this.repository.criarEnderecoParaAdotante(enderecoData);
     try {
-      res.status(200).json({
-        data: criarEndereco,
-        resnponse: { message: response.message, success: response.success },
-      });
+      if (!success) throw Error();
+      res
+        .status(200)
+        .json({ data: enderecoCriado, message: message, success: success });
     } catch (error) {
-      res.status(400).json({
-        message: `${response.message} - ${error}`,
-        success: response.success,
-      });
+      res.status(500).json({ message: message, success: success });
     }
   };
 
@@ -74,7 +59,7 @@ class ControllerEndereco {
     try {
       if (!response.success) throw Error();
       res.status(200).json({
-        data: response.addressUpdate,
+        data: response.enderecoAtualizado,
         message: response.message,
         success: response.success,
       });

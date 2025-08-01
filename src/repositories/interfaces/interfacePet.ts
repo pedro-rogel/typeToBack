@@ -29,4 +29,7 @@ export default interface InterfacePet {
   queryParams(
     adotado: boolean
   ): Promise<{ success: boolean; message?: string } | void>;
+
+  adotaPet(idPet:number, idAdotante:number):Promise<{success:boolean, message?:string}>
+  
 }

@@ -1,13 +1,19 @@
 import { Repository } from "typeorm";
 import PetEntity from "../entities/petEntity";
 import InterfacePet from "./interfaces/interfacePet";
+import AdotanteEntity from "../entities/adotanteEntity";
 
 export default class PetRepository implements InterfacePet {
-  private repository: Repository<PetEntity>;
+  private petRepository: Repository<PetEntity>;
+  private adotanteRepository: Repository<AdotanteEntity>;
   private messageTrue: string;
   private messageFalse: string;
-  constructor(repository: Repository<PetEntity>) {
-    this.repository = repository;
+  constructor(
+    repository: Repository<PetEntity>,
+    adotanteRepository: Repository<AdotanteEntity>
+  ) {
+    this.petRepository = repository;
+    this.adotanteRepository = adotanteRepository;
     this.messageTrue = "Requisição realizada com sucesso!";
     this.messageFalse = "Falha na requisição";
   }
@@ -17,7 +23,9 @@ export default class PetRepository implements InterfacePet {
     message?: string;
     listaDePet?: Array<PetEntity>;
   }> {
-    const listaDePet = await this.repository.find();
+    const listaDePet = await this.petRepository.find({
+      relations: ['adotante']
+    });
     if (!listaDePet) {
       return {
         message: this.messageFalse,
@@ -36,7 +44,7 @@ export default class PetRepository implements InterfacePet {
     success: boolean;
     message?: string;
   }> {
-    const pet = await this.repository.findOne({ where: { id } });
+    const pet = await this.petRepository.findOne({ where: { id }, relations:['adotante'] });
     if (!pet)
       return {
         petPorId: null,
@@ -54,7 +62,7 @@ export default class PetRepository implements InterfacePet {
     message?: string;
     petBody?: PetEntity;
   }> {
-    const newPet = await this.repository.save(pet);
+    const newPet = await this.petRepository.save(pet);
     return newPet
       ? { success: true, message: this.messageTrue, petBody: newPet }
       : { success: false, message: this.messageFalse };
@@ -67,12 +75,12 @@ export default class PetRepository implements InterfacePet {
     message?: string;
     petAtualizado?: PetEntity | null;
   }> {
-    const petToUpdate = await this.repository.findOne({ where: { id } });
+    const petToUpdate = await this.petRepository.findOne({ where: { id } });
     if (!petToUpdate) {
       return { success: false, message: "Pet não encontrado!" };
     }
     Object.assign(petToUpdate, pet);
-    await this.repository.save(petToUpdate);
+    await this.petRepository.save(petToUpdate);
     return {
       success: true,
       message: "Pet atualizado com sucesso!",
@@ -80,15 +88,15 @@ export default class PetRepository implements InterfacePet {
     };
   }
   async deletePet(id: number): Promise<{ success: boolean; message?: string }> {
-    const petToDelete = await this.repository.findOne({ where: { id } });
+    const petToDelete = await this.petRepository.findOne({ where: { id } });
     if (!petToDelete) return { success: false, message: "Pet não encontrado!" };
-    await this.repository.remove(petToDelete);
+    await this.petRepository.remove(petToDelete);
     return { success: true, message: "Pet Deletado com sucesso!" };
   }
   async queryParams(
     adotado: boolean
   ): Promise<{ success: boolean; message?: string; petAdotado?: PetEntity[] }> {
-    const adotadoParam = await this.repository.find({ where: { adotado } });
+    const adotadoParam = await this.petRepository.find({ where: { adotado } });
     if (!adotadoParam)
       return { success: false, message: "Passe um filtro válido" };
     return {
@@ -96,5 +104,22 @@ export default class PetRepository implements InterfacePet {
       petAdotado: adotadoParam,
       message: "Consulta realizada com sucesso!",
     };
+  }
+  async adotaPet(
+    idPet: number,
+    idAdotante: number
+  ): Promise<{ success: boolean; message?: string }> {
+    const petId = await this.petRepository.findOne({ where: { id: idPet } });
+    const adotanteId = await this.adotanteRepository.findOne({
+      where: { id: idAdotante },
+    });
+
+    if (!petId || !adotanteId)
+      return { success: false, message: this.messageFalse };
+    petId.adotante = adotanteId;
+    petId.adotado = true;
+    await this.petRepository.save(petId);
+
+    return { success: true, message: this.messageTrue };
   }
 }

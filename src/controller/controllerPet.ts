@@ -4,6 +4,7 @@ import PetRepository from "../repositories/petRepositories.ts";
 import PetEntity from "../entities/petEntity.ts";
 import geraIdade from "../functions/geraIdade.ts";
 import convertLowerCase from "../functions/convertLowerCase.ts";
+import { classToPlain, instanceToPlain } from "class-transformer";
 
 interface PetId {
   id: string;
@@ -14,8 +15,9 @@ class ControllerPet {
   listarPet: RequestHandler = async (req, res) => {
     const listaDePet = await this.repository.listarPet();
     try {
+      const petsTransformados = listaDePet.listaDePet?.map(pet => instanceToPlain(pet))
       res.status(200).json({
-        data: listaDePet.listaDePet,
+        data: petsTransformados,
         message: listaDePet.message,
         success: listaDePet.success,
       });
@@ -119,6 +121,25 @@ class ControllerPet {
       });
     } catch (error) {
       if (!success) res.status(404).json({ message });
+    }
+  };
+
+  adotaPet: RequestHandler = async (req, res) => {
+    const { pet_id, adotante_id } = req.params;
+    const { success, message } = await this.repository.adotaPet(
+      Number(pet_id),
+      Number(adotante_id)
+    );
+    try {
+      return !success
+        ? (res
+            .status(400)
+            .json({ success: success, message: message }) as unknown as void)
+        : (res
+            .status(200)
+            .json({ success: success, message: message }) as unknown as void);
+    } catch (error) {
+      res.status(500).json({ message: message, success: success });
     }
   };
 }

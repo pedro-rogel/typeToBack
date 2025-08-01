@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import AdotanteEntity from "./adotanteEntity";
 
 @Entity()
 export default class EnderecoEntity {
@@ -22,6 +23,9 @@ export default class EnderecoEntity {
 
   @Column()
   zip: string;
+
+  @OneToOne(() => AdotanteEntity, adotante => adotante.address)
+  adotante?:AdotanteEntity
 
   constructor(
     street: string,

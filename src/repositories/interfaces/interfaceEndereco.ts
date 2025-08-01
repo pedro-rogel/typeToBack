@@ -4,9 +4,10 @@ export default interface InterfaceEndereco {
   listarEndereco():
     | Promise<Array<EnderecoEntity>>
     | Array<EnderecoEntity>;
-  criarEndereco(
-    endereco: EnderecoEntity
-  ): Promise<{ success: boolean; message?: string } | void> | void;
+  criarEnderecoParaAdotante(
+    endereco: EnderecoEntity & {idAdotante:number}
+  ): Promise<{ success: boolean; message?: string; enderecoCriado?:EnderecoEntity}>;
+ 
   atualizarEndereco(
     id: number,
     endereco: EnderecoEntity
